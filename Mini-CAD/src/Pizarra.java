@@ -43,27 +43,28 @@ public class Pizarra extends JPanel {
 
         // Dibujar las figuras basadas en el número de clics
         if (!puntos.isEmpty()) {
-            if (puntos.size() == 1) {
+            int size = puntos.size();
+    
+            if (size == 1) {
                 Figura.dibujarCirculo(g, puntos.get(0).x, puntos.get(0).y, 20);
-            } else if (puntos.size() == 2) {
+            } else if (size == 2) {
                 Figura.dibujarLinea(g, puntos.get(0).x, puntos.get(0).y, puntos.get(1).x, puntos.get(1).y);
-            } else if (puntos.size() == 3) {
+            } else if (size == 3) {
                 Figura.dibujarTriangulo(g, puntos.get(0).x, puntos.get(0).y,
                         puntos.get(1).x, puntos.get(1).y,
                         puntos.get(2).x, puntos.get(2).y);
-            } else if (puntos.size() == 4) {
-                Figura.dibujarCuadrado(g, puntos.get(0).x, puntos.get(0).y, 40);
-            } else if (puntos.size() == 5) {
-                int[] xPoints = new int[5];
-                int[] yPoints = new int[5];
-                for (int i = 0; i < 5; i++) {
+            } else {
+                // Dibujar un polígono cerrado con los puntos de clics
+                int[] xPoints = new int[size];
+                int[] yPoints = new int[size];
+                for (int i = 0; i < size; i++) {
                     xPoints[i] = puntos.get(i).x;
                     yPoints[i] = puntos.get(i).y;
                 }
-                Figura.dibujarPentagono(g, xPoints, yPoints);
+                g.drawPolygon(xPoints, yPoints, size);
             }
         }
-    }
+    }    
 
     private class PizarraMouseListener implements MouseListener {
         @Override
@@ -107,31 +108,50 @@ public class Pizarra extends JPanel {
     private class PizarraKeyListener implements KeyListener {
     @Override
     public void keyPressed(KeyEvent e) {
-        int keyCode = e.getKeyCode();
+    int keyCode = e.getKeyCode();
 
         switch (keyCode) {
-            case KeyEvent.VK_UP:
-                trasladarFigura(0, -DESPLAZAMIENTO);
-                break;
-            case KeyEvent.VK_DOWN:
-                trasladarFigura(0, DESPLAZAMIENTO);
-                break;
-            case KeyEvent.VK_LEFT:
-                trasladarFigura(-DESPLAZAMIENTO, 0);
-                break;
-            case KeyEvent.VK_RIGHT:
-                trasladarFigura(DESPLAZAMIENTO, 0);
+                case KeyEvent.VK_UP:
+                    trasladarFigura(0, -DESPLAZAMIENTO);
+                    imprimirMatrizTraslacion(0, -DESPLAZAMIENTO);
+                    break;
+                case KeyEvent.VK_DOWN:
+                    trasladarFigura(0, DESPLAZAMIENTO);
+                    imprimirMatrizTraslacion(0, DESPLAZAMIENTO);
+                    break;
+                case KeyEvent.VK_LEFT:
+                    trasladarFigura(-DESPLAZAMIENTO, 0);
+                    imprimirMatrizTraslacion(-DESPLAZAMIENTO, 0);
+                    break;
+                case KeyEvent.VK_RIGHT:
+                    trasladarFigura(DESPLAZAMIENTO, 0);
+                    imprimirMatrizTraslacion(DESPLAZAMIENTO, 0);
                 break;
             case KeyEvent.VK_Q:
                 rotarFigura(-Math.toRadians(10)); // Rotar 10 grados a la izquierda
+                imprimirMatrizRotacion(-Math.toRadians(10));
                 break;
             case KeyEvent.VK_W:
                 rotarFigura(Math.toRadians(10)); // Rotar 10 grados a la derecha
+                imprimirMatrizRotacion(Math.toRadians(10));
+                break;
+            case KeyEvent.VK_PLUS:
+            case KeyEvent.VK_ADD:
+                // Tecla "+" para escalar hacia arriba
+                escalarFigura(1.1);
+                imprimirMatrizEscalamiento(1.1);
+                break;
+            case KeyEvent.VK_MINUS:
+            case KeyEvent.VK_SUBTRACT:
+                // Tecla "-" para escalar hacia abajo
+                escalarFigura(0.9);
+                imprimirMatrizEscalamiento(0.9);
                 break;
         }
 
         repaint();
-    }
+    }    
+
 
         // Resto de los métodos de la interfaz KeyListener
         // No es necesario implementar para este ejemplo
@@ -141,13 +161,6 @@ public class Pizarra extends JPanel {
 
         @Override
         public void keyReleased(KeyEvent e) {
-        }
-    }
-
-    private void trasladarFigura(int dx, int dy) {
-        for (int i = 0; i < puntos.size(); i++) {
-            Point punto = puntos.get(i);
-            punto.setLocation(punto.getX() + dx, punto.getY() + dy);
         }
     }
 
@@ -184,6 +197,16 @@ public class Pizarra extends JPanel {
         repaint();
     }
     
+    public List<Point> getPuntos() {
+    return puntos;
+    }
+    
+     private void trasladarFigura(int dx, int dy) {
+        for (int i = 0; i < puntos.size(); i++) {
+            Point punto = puntos.get(i);
+            punto.setLocation(punto.getX() + dx, punto.getY() + dy);
+        }
+    }
 
     private void rotarFigura(double angulo) {
         if (puntos.size() > 0) {
@@ -198,4 +221,47 @@ public class Pizarra extends JPanel {
             }
         }
     }
+    
+    private void escalarFigura(double factorEscala) {
+    if (!puntos.isEmpty()) {
+        Point centro = puntos.get(0);
+
+        for (int i = 1; i < puntos.size(); i++) {
+            Point punto = puntos.get(i);
+            double x = punto.getX() - centro.getX();
+            double y = punto.getY() - centro.getY();
+
+            // Aplicar el factor de escala a las coordenadas
+            x *= factorEscala;
+            y *= factorEscala;
+
+            punto.setLocation(x + centro.getX(), y + centro.getY());
+            }
+        }
+    }
+    
+    // Método para imprimir la matriz de traslación en la consola
+    private void imprimirMatrizTraslacion(int dx, int dy) {
+        System.out.println("Matriz de traslación:");
+        System.out.println("[ 1   0   " + dx + " ]");
+        System.out.println("[ 0   1   " + dy + " ]");
+        System.out.println("[ 0   0   1 ]");
+}
+
+    
+    private void imprimirMatrizRotacion(double angulo) {
+        System.out.println("Matriz de rotación:");
+        System.out.println("[ " + Math.cos(angulo) + "  -" + Math.sin(angulo) + " ]");
+        System.out.println("[ " + Math.sin(angulo) + "   " + Math.cos(angulo) + " ]");
+        System.out.println("[ 0                   0                   1 ]");
+    }
+
+    // Método para imprimir la matriz de escalamiento en la consola
+    private void imprimirMatrizEscalamiento(double factorEscala) {
+        System.out.println("Matriz de escalamiento:");
+        System.out.println("[ " + factorEscala + "   0   0 ]");
+        System.out.println("[ 0   " + factorEscala + "   0 ]");
+        System.out.println("[ 0   0   1 ]");
+    }
+
 }

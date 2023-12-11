@@ -1,3 +1,12 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Class.java to edit this template
+ */
+
+/**
+ *
+ * @author rf010
+ */
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
@@ -47,6 +56,15 @@ public class BotonesListener implements ActionListener, KeyListener {
 
             // Redibujar la pizarra
             pizarra.repaint();
+
+            // Imprimir la matriz de rotación
+            
+        } else if (keyCode == KeyEvent.VK_PLUS || keyCode == KeyEvent.VK_ADD) {
+            // Tecla "+" para escalar hacia arriba
+            escalarFigura(1.1);
+        } else if (keyCode == KeyEvent.VK_MINUS || keyCode == KeyEvent.VK_SUBTRACT) {
+            // Tecla "-" para escalar hacia abajo
+            escalarFigura(0.9);
         }
     }
 
@@ -61,5 +79,37 @@ public class BotonesListener implements ActionListener, KeyListener {
         coordenadasRotadas[0] = (int) (x * Math.cos(angulo) - y * Math.sin(angulo));
         coordenadasRotadas[1] = (int) (x * Math.sin(angulo) + y * Math.cos(angulo));
         return coordenadasRotadas;
+    }
+
+    // Método para escalar la figura
+    private void escalarFigura(double factorEscala) {
+        for (int i = 0; i < pizarra.getPuntos().size(); i++) {
+            int x = pizarra.getCoordenadaX(i);
+            int y = pizarra.getCoordenadaY(i);
+
+            // Aplicar la escala mediante una matriz
+            int[][] matrizEscala = {{(int) (factorEscala * 100), 0, 0},
+                                    {0, (int) (factorEscala * 100), 0},
+                                    {0, 0, 1}};
+            int[] coordenadasEscaladas = transformarCoordenadas(x, y, matrizEscala);
+
+            // Actualizar las coordenadas de la figura
+            pizarra.setCoordenadaX(i, coordenadasEscaladas[0]);
+            pizarra.setCoordenadaY(i, coordenadasEscaladas[1]);
+        }
+
+        // Redibujar la pizarra
+        pizarra.repaint();
+    }
+
+
+   
+
+    // Método para transformar coordenadas utilizando una matriz de transformación
+    private int[] transformarCoordenadas(int x, int y, int[][] matriz) {
+        int[] coordenadasTransformadas = new int[2];
+        coordenadasTransformadas[0] = (matriz[0][0] * x + matriz[0][1] * y + matriz[0][2]) / 100;
+        coordenadasTransformadas[1] = (matriz[1][0] * x + matriz[1][1] * y + matriz[1][2]) / 100;
+        return coordenadasTransformadas;
     }
 }
